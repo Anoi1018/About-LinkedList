@@ -32,4 +32,26 @@ var removeNthFromEnd = function(head, n) {
 };
 
 二、快慢指针
+var removeNthFromEnd = function(head, n) {
+    if(head === null) return head;
+    var slow = head,fast = head,count=n+1;//找到倒数第n+1个节点
+    //通过删除倒数第n+1个节点的后继节点来实现删除倒数第n个节点
+    
+    //快指针先走n+1步 再快慢指针同步走 当快指针指向null 慢指针指向倒数第n+1个节点
+    while(fast && count>0){
+        fast = fast.next;
+        count--;
+    }
+    //当倒数第n个节点为head 快指针走到第n步即为null
+    if(fast===null && count!==0){
+        head = head.next;
+        return head;
+    }
+    while(fast){
+        fast = fast.next;
+        slow = slow.next;
+    }
 
+    slow.next = slow.next.next;
+    return head;
+};
