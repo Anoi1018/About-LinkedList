@@ -1,0 +1,42 @@
+给定一个包含非负整数的数组，你的任务是统计其中可以组成三角形三条边的三元组个数。
+
+示例 1:
+输入: [2,2,3,4]
+输出: 3
+解释:
+有效的组合是: 
+2,3,4 (使用第一个 2)
+2,3,4 (使用第二个 2)
+2,2,3
+
+注意:
+数组长度不超过1000。
+数组里整数的范围为 [0, 1000]。
+
+代码示意：
+排序+双指针
+
+var triangleNumber = function(nums) {
+    if(!nums || nums.length<3) return 0;
+
+    var count = 0,pos=nums.length-1,i,j;
+    nums.sort((a,b)=>a-b); //保证正序
+
+    while(pos>=0){
+        i=0,j=pos-1;
+        while(i<j){
+            if(nums[i]+nums[j]>nums[pos]){
+                count += j-i; //注意这里
+                j--;
+            }else{
+                i++;
+            }
+        } 
+        pos--;
+    }
+    return count;
+};
+
+关于Array.prototype.sort()： ES没有规定具体排序方法
+V8引擎 7.0版本之前  arr.length<10 插入排序 >=10 快速排序 快排不稳定最坏情况下时间复杂度O（n^2）
+7.0版之后 Timsort混合排序 少元素数组插入排序 + 归并排序 整合排好序的少元素数组  时间复杂度O（nlogn）
