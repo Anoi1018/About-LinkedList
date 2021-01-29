@@ -1,0 +1,65 @@
+给定两个用链表表示的整数，每个节点包含一个数位。
+
+这些数位是反向存放的，也就是个位排在链表首部。
+
+编写函数对这两个整数求和，并用链表形式返回结果。
+
+示例：
+输入：(7 -> 1 -> 6) + (5 -> 9 -> 2)，即617 + 295
+输出：2 -> 1 -> 9，即912
+
+进阶：思考一下，假设这些数位是正向存放的，又该如何解决呢?
+
+示例：
+输入：(6 -> 1 -> 7) + (2 -> 9 -> 5)，即617 + 295
+输出：9 -> 1 -> 2，即912
+
+代码示意：
+一、借用数组构造整数 整数相加返回结果 转换成链表
+var addTwoNumbers = function(l1, l2) {
+    if(!l1) return l2;
+    if(!l2) return l1;
+    var arr1=[],arr2=[];
+    while(l1){
+        arr1.unshift(l1.val);
+        l1 = l1.next;
+    }
+    while(l2){
+        arr2.unshift(l2.val);
+        l2 = l2.next;
+    }
+    let a = parseInt(arr1.join(""));
+    let b = parseInt(arr2.join(""));
+    let c =(a+b)+"";
+    var head = new ListNode(parseInt(c.charAt(c.length-1)));
+    var node = head;
+    for(let i=c.length-1;i>0;i--){
+        var node2 = new ListNode(parseInt(c.charAt(i-1)));
+        node.next = node2;
+        node = node2;
+    }
+    return head;
+};
+直接转换为数字相加 在超过js精度时，结果不正确
+
+二、链表每一位进行求和计算 用carry存储进位 参与到下一次节点值计算过程
+var addTwoNumbers = function(l1, l2) {
+    if(l1===null) return l2;
+    if(l2===null) return l1;
+    var carry = 0,sum=0,pre=new ListNode(0),p=pre,a,b; 
+    while(l1 || l2){
+        a = l1===null? 0 : l1.val;
+        b = l2===null? 0 : l2.val;
+        sum = a+b+ carry;
+        var node= new ListNode(sum%10);
+        carry = (sum-sum%10)/10;
+        p.next = node;
+        p = node;
+        if(l1) l1= l1.next;
+        if(l2) l2= l2.next;
+    }
+    
+    if(carry !== 0) p.next = new ListNode(carry);
+
+    return pre.next; 
+};
