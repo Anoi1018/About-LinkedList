@@ -1,19 +1,93 @@
 给定 n 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
 
 示例 1：
-
-
-
 输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]
 输出：6
-解释：上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水（蓝色部分表示雨水）。
-示例 2：
 
-输入：height = [4,2,0,3,2,5]
-输出：9
 提示：
-
 n == height.length
 0 <= n <= 3 * 104
 0 <= height[i] <= 105
 
+代码示意：
+一、暴力法：时间复杂度O（n^2） 空间复杂度O（1）
+1、遍历一次数组求得每个位置的积水量 累积求和
+2、每个位置的积水量，需要从左遍历到当前位置求左边最高柱子高度，从右遍历到当前位置求右边最高柱子高度，即每个位置都需要遍历一次数组
+var trap = function(height) {
+    if(height.length<3) return 0;
+    let len = height.length,left_max,right_max;
+    let ans=0;
+    for(let i=1;i<len-1;i++){
+        left_max = 0,right_max=0;
+    //注意这里 每次进入循环寻找当前位置左右最高柱子前 初始化左右最高柱子高度值
+        for(let j=0;j<=i;j++){
+            left_max = Math.max(height[j],left_max);
+        }
+        for(let k=len-1;k>=i;k--){
+            right_max = Math.max(height[k],right_max);
+        }
+        ans += Math.min(left_max,right_max)-height[i];
+    }
+    return ans;
+};
+二、动态规划：时间复杂度O（3n） 空间复杂度O（2n）
+*在暴力解法的思维上，先从左到右遍历一次数组建立每个位置对应的左边最高柱子的高度，从右到左遍历数组建立每个位置对应的右边最高柱子的高度，再遍历一次数组，计算当前位置的积水量，累计求和
+var trap = function(height) {
+    if(height.length<3) return 0;
+    let len = height.length,left_max=height[0],right_max=height[len-1];
+    let left =[],right =[];
+    let ans=0;
+    for(let i=0;i<len;i++){
+        left_max = height[i]>left_max? height[i] : left_max;
+        left.push(left_max);
+        right_max = height[len-1-i]>right_max? height[len-1-i] :right_max;
+        right.unshift(right_max);
+    }
+    for(let j=0;j<len;j++){
+        ans += Math.min(left[j],right[j])-height[j];
+    }
+    return ans;
+};
+***三、双指针法：时间复杂度O（n） 空间复杂度O（1）
+var trap = function(height) {
+     if(height<3) return 0;
+     let len = height.length,left=0,right=len-1,ans =0;
+     let left_max=0,right_max=0;
+     while(left<right){
+         if(height[left]<=height[right]){
+             left_max = height[left]>left_max?height[left]:left_max;
+             ans += left_max - height[left];
+             left++;
+         }else {
+             right_max = height[right]>right_max?height[right]:right_max;
+             ans += right_max - height[right];
+             right--;
+         }
+     }
+     return ans;
+};
+四、单调递减栈 时间复杂度O（n） 空间复杂度O（n）
+1、用栈存放低洼左边界 栈内元素为低洼左边界元素的索引下标
+2、height【i】大于当前栈顶元素 则height【i】作为低洼右边界 进入内循环
+3、内循环计算当前低洼区面积即积水量 累积求和
+var trap = function(height) {
+    if(height<3) return 0;
+    //js中 用【】表示栈 没有peek（）操作、isEmpty（）操作
+    const stack = [];//栈存储的是作为低洼左边界的数组元素索引下标
+    let i=0,ans=0,len=height.length,floor,distance,height_diff;
+    while(i<len){
+        //栈不为空--存在低洼左边界height[i]>stack.peek()存在低洼右边界
+        //内循环内计算这块低洼区域的面积 从而计算积水量 累加进结果
+        while(stack.length!==0 && height[i]>height[stack[stack.length-1]]){
+            floor = stack.pop();//低洼处
+            if(stack.length===0) break;//没有左边界 退出内循环
+            left = stack[stack.length-1]; //栈顶元素--索引值
+            distance = i-left-1; //低洼宽度
+            height_diff = Math.min(height[i],height[left])-height[floor]; //低洼高度
+            ans += distance * height_diff; //低洼面积 累积进结果
+        }
+        //内循环结束 压入新的左边界索引
+        stack.push(i++);
+    }
+    return ans;
+};
